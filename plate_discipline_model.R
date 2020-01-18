@@ -1,0 +1,139 @@
+install.packages("devtools")
+install.packages("tidyverse")
+install.packages("ggplot2")
+install.packages("mgcv")
+install.packages("REdaS")
+install.packages("gridExtra")
+install.packages("lme4")
+library(devtools)
+library(tidyverse)
+install_github("BillPetti/baseballr")
+library(baseballr)
+library(ggplot2)
+library(mgcv)
+library(REdaS)
+library(gridExtra)
+library(lme4)
+
+
+date <- as.Date("2019-03-19")
+
+all_pitches <- scrape_statcast_savant(start_date = date,
+                       end_date = date, player_type = "pitcher")
+
+while(date < as.Date("2019-09-30"))
+{
+  test <- scrape_statcast_savant(start_date = date,
+                                        end_date = date + 10, player_type = "pitcher")
+  all_pitches <- rbind(all_pitches,test)
+  date <- date + 10
+}
+
+all_pitches <- all_pitches %>% distinct()
+
+all_pitches_trim <- all_pitches[,c("pitch_type",
+                                "player_name",
+                                "batter",
+                                "pitcher",
+                                "description",
+                                "zone",
+                                "stand",
+                                "p_throws",
+                                "balls",
+                                "strikes",
+                                "plate_x",
+                                "plate_z",
+                                "fielder_2",
+                                "woba_value")]
+
+all_pitches_trim <- mutate(all_pitches_trim, swing=ifelse(description %in% c("hit_into_play", "foul","swinging_strike", "hit_into_play_score", "hit_into_play_no_out", "foul_tip", "swinging_strike_blocked"),
+                                            1, 0))
+all_pitches_trim <- all_pitches_trim[!(is.na(all_pitches_trim$plate_x)) | !(is.na(all_pitches_trim$plate_z)) | !(is.na(all_pitches_trim$pitch_type)),]
+
+all_pitches_trim <- mutate(all_pitches_trim, pitch_group=ifelse(pitch_type %in% c("FF", "FT","FC", "SI"),
+                                                          "Fastball", ifelse(pitch_type %in% c("SL", "EP","CU", "KN", "KC"),
+                                                                             "Breaking", "OffSpeed")))
+
+all_pitches_trim$count <- paste(all_pitches_trim$balls,"-",all_pitches_trim$strikes)
+
+all_splits <- split(all_pitches_trim, with(all_pitches_trim, interaction(pitch_group,count)), drop = TRUE)
+list2env(all_splits,envir=.GlobalEnv)
+
+all_predict <- all_pitches_trim[FALSE,]
+all_predict$predict <- numeric()
+
+# define the strike zone
+# topKzone <- 3.5
+# botKzone <- 1.6
+# inKzone <- -0.95
+# outKzone <- 0.95
+# kZone <- data.frame(
+#   x=c(inKzone, inKzone, outKzone, outKzone, inKzone),
+#   y=c(botKzone, topKzone, topKzone, botKzone, botKzone)
+# )
+
+predict_swing <- function(x)
+{
+  if(nrow(all_splits[[x]]) > 100)
+  {
+    fit <- gam(swing ~ s(plate_x,plate_z), family=binomial, data=all_splits[[x]])
+    
+    all_splits[[x]]$predict <- exp(predict(fit,all_splits[[x]]))/(1 + exp(predict(fit,all_splits[[x]])))
+    
+    all_predict <- rbind(all_predict,all_splits[[x]])
+  }
+}
+
+#fit <- gam(swing ~ s(plate_x,plate_z), family=binomial, data=all_splits[[1]])
+
+# find predicted probabilities over a 50 x 50 grid
+# plate_x <- seq(-1.5, 1.5, length.out=100)
+# plate_z <- seq(1.4, 3.75, length.out=100)
+# data.predict <- data.frame(plate_x = c(outer(plate_x, plate_z * 0 + 1)),
+#                            plate_z = c(outer(plate_x * 0 + 1, plate_z)))
+# lp <- predict(fit, data.predict)
+# data.predict$Probability <- exp(lp) / (1 + exp(lp))
+# 
+# ggplot(kZone, aes(x, y)) +
+#   geom_tile(data=data.predict, 
+#             aes(x=plate_x, y=plate_z, fill= Probability)) +
+#   scale_fill_distiller(palette = "Spectral") +
+#   geom_path(lwd=1.5, col="black") +
+#   coord_fixed()+labs(title="Swing Rates")
+# 
+# all_splits[[1]]$predict <- exp(predict(fit,all_splits[[1]]))/(1 + exp(predict(fit,all_splits[[1]])))
+# 
+# all_predict <- rbind(all_predict,all_splits[[1]])
+x <- predict_swing(30)
+
+all_data <- lapply(1:length(all_splits), predict_swing)
+all_data <- do.call("rbind", all_data)
+
+in_zone <- all_data %>% filter(zone == 1 | zone == 2 | zone == 3 | zone == 4 | zone == 5 | zone == 6 | zone == 7 | zone == 8 |zone == 9)
+
+out_of_zone <- all_data %>% filter(zone == 10 | zone == 11 | zone == 12 | zone == 13)
+
+
+model_zone <- lmer(swing ~ predict + (1|pitcher) + (1|batter),
+               data = in_zone)
+
+model_out_of_zone <- lmer(swing ~ predict + (1|pitcher) + (1|batter),
+                          data = out_of_zone)
+
+out_of_zone_pitchers <- ranef(model_out_of_zone)$pitcher
+
+in_zone_rates <- in_zone %>% group_by(player_name, pitcher) %>%
+      arrange(player_name, pitcher) %>%
+      summarise(Pitches = n(),
+                Swing_Rate = mean(swing),
+               xSwing_rate = mean(predict)) %>%
+      filter(Pitches >= 100)
+in_zone_rates$diff <- in_zone_rates$Swing_Rate - in_zone_rates$xSwing_rate
+
+out_of_zone_rates <- out_of_zone %>% group_by(player_name, pitcher) %>%
+  arrange(player_name, pitcher) %>%
+  summarise(Pitches = n(),
+            Swing_Rate = mean(swing),
+            xSwing_rate = mean(predict)) %>%
+  filter(Pitches >= 100)
+out_of_zone_rates$diff <- out_of_zone_rates$Swing_Rate - out_of_zone_rates$xSwing_rate

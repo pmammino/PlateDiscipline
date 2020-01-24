@@ -120,20 +120,19 @@ model_zone <- lmer(swing ~ predict + (1|pitcher) + (1|batter),
 model_out_of_zone <- lmer(swing ~ predict + (1|pitcher) + (1|batter),
                           data = out_of_zone)
 
-out_of_zone_pitchers <- ranef(model_out_of_zone)$pitcher
+out_of_zone_pitchers <- data.frame(ranef(model_out_of_zone)$pitcher)
+colnames(out_of_zone_pitchers) <- "OOZ"
 
-in_zone_rates <- in_zone %>% group_by(player_name, pitcher) %>%
-      arrange(player_name, pitcher) %>%
-      summarise(Pitches = n(),
-                Swing_Rate = mean(swing),
-               xSwing_rate = mean(predict)) %>%
-      filter(Pitches >= 100)
-in_zone_rates$diff <- in_zone_rates$Swing_Rate - in_zone_rates$xSwing_rate
+in_zone_pitchers <- data.frame(ranef(model_zone)$pitcher)
+colnames(in_zone_pitchers) <- "IZ"
 
-out_of_zone_rates <- out_of_zone %>% group_by(player_name, pitcher) %>%
-  arrange(player_name, pitcher) %>%
-  summarise(Pitches = n(),
-            Swing_Rate = mean(swing),
-            xSwing_rate = mean(predict)) %>%
-  filter(Pitches >= 100)
-out_of_zone_rates$diff <- out_of_zone_rates$Swing_Rate - out_of_zone_rates$xSwing_rate
+all_results <- merge(in_zone_pitchers,out_of_zone_pitchers,by = "row.names")
+colnames(all_results) <- c("player_id","IZ","OOZ")
+all_results$player_id <- as.numeric(all_results$player_id)
+
+
+pitchers_2019 <- read.csv("pitchers_2019.csv")
+pitchers_2019 <- pitchers_2019[,c("player_id", "player_name", "pitches")]
+
+pitchers_2019 <- left_join(pitchers_2019,all_results,by = "player_id")
+pitchers_2019$PD <- round(-1*pitchers_2019$IZ + pitchers_2019$OOZ,5)

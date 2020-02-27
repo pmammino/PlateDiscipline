@@ -524,7 +524,7 @@ out_of_zone_data_2017$Season <- 2017
 all_data_2016 <- all_data %>% filter(Season == 2016)
 in_zone_2016 <- all_data_2016 %>% filter(zone == 1 | zone == 2 | zone == 3 | zone == 4 | zone == 5 | zone == 6 | zone == 7 | zone == 8 |zone == 9)
 
-out_of_zone_2016 <- all_data_2016 %>% filter(zone == 10 | zone == 11 | zone == 12 | zone == 13)
+out_of_zone_2016 <- c
 
 
 model_zone_2016 <- lmer(swing ~ predict + (1|pitcher) + (1|batter),
@@ -628,9 +628,21 @@ plate_discipline_all <- plate_discipline_all[,c("pitcher",
                                         "IZ.Swing",
                                         "IZ.xSwing",
                                         "IZ")]
-plate_discipline_all$Score <- plate_discipline_all$OOZ - plate_discipline_all$IZ + plate_discipline_all$In_Whiff
+plate_discipline_all$Score <- round(plate_discipline_all$OOZ - plate_discipline_all$IZ + plate_discipline_all$In_Whiff,3)
 
-write.csv(plate_discipline_all,"plate_disciplie_all.csv")
+whiff_league <- mean(whiff_predict_data$predict_whiff)
+ooz_all <- all_data %>% 
+              filter(zone == 10 | zone == 11 | zone == 12 | zone == 13)
+ooz_league <- mean(ooz_all$predict)
+iz_all <- all_data %>% 
+  filter(zone == 1 | zone == 2 | zone == 3 | zone == 4 | zone == 5 | zone == 6 | zone == 7 | zone == 8 |zone == 9)
+iz_league <- mean(iz_all$predict)
+
+plate_discipline_all$command <- round((plate_discipline_all$xWhiff/whiff_league) +
+                                (plate_discipline_all$OOZ.xSwing/ooz_league) +
+                                (1+((iz_league-plate_discipline_all$IZ.xSwing)/iz_league)),3)
+
+write.csv(plate_discipline_all,"plate_discipline_all.csv")
 
 all_pitches_trim <- mutate(all_pitches_trim, called_strike=ifelse(description %in% c("called_strike"),1, 0))
 

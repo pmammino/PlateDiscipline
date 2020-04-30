@@ -57,5 +57,6 @@ predict_whiff_model <- function(x)
   }
 }
 
+predict_whiff_model(7)
 
-all_plots <- lapply(1:length(all_splits), predict_whiff_model)
+

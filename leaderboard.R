@@ -97,5 +97,73 @@ results_all_seasons$Seasons <- as.numeric(results_all_seasons$Seasons)
 results_all_seasons_Stuff <- left_join(results_all_seasons,all_seasons, by = c("mlb_id" = "pitcher", "Seasons" = "Season"))
 results_all_seasons_Stuff$StuffDiff <- results_all_seasons_Stuff$ERA - results_all_seasons_Stuff$StuffERA
 
+results_all_seasons_Stuff$FipStuff <- results_all_seasons_Stuff$FIP - results_all_seasons_Stuff$StuffERA
+
+results_all_seasons_Stuff <- results_all_seasons_Stuff %>% 
+  group_by(Seasons) %>%
+  mutate(FIP_Percentile = (1- round(percent_rank(FIP),3)) *100,
+         StuffERAPercentile = (1- round(percent_rank(StuffERA),3)) * 100,
+         Precentile_Diff = StuffERAPercentile - FIP_Percentile)
+
+results_next <- results_all_seasons_Stuff %>% 
+  filter(IP >= innings) %>%
+  arrange(playerid, Seasons) %>%
+  group_by(playerid) %>% 
+  mutate(ERA_Next = dplyr::lead(ERA, n=1, default=NA))
+
+results_next <- results_next %>%
+  filter(!is.na(ERA_Next))
+
+era_stuff_model_next <- lm(ERA_Next ~ In_Whiff + IZ + OOZ + In_wOBA + Command,
+                                 data = results_next)
+results_next$StuffERANext <- predict(era_stuff_model_next,results_next)
+
+innings_list <- seq(20, 160, 20)
+
+all_correlations_next <- function(innings){
+  results_next <- results_all_seasons_Stuff %>% 
+    filter(IP >= innings) %>%
+    arrange(playerid, Seasons) %>%
+    group_by(playerid) %>% 
+    mutate(ERA_Next = dplyr::lead(ERA, n=1, default=NA))
+  
+  results_next <- results_next %>%
+    filter(!is.na(ERA_Next))
+  
+  results_next$StuffERANext <- predict(era_stuff_model_next, newdata = results_next)
+  
+  correlations <- data.frame("IP" = innings,
+                             "NextFIP_Cor" = round(cor(results_next$ERA_Next,results_next$FIP),3), 
+                             "NextStuff_Cor" = round(cor(results_next$ERA_Next,results_next$StuffERANext),3))
+  correlations
+  
+}
+
+all_correlations_next <- lapply(innings_list, all_correlations_next)
+all_correlations_next <- do.call("rbind", all_correlations_next)
+
+all_correlations_next <- all_correlations_next %>%
+  gather(key = "variable", value = "value", -IP)
+
+corr_next_plot <- ggplot(all_correlations_next, aes(x = IP, y = value)) + 
+  geom_line(aes(color = variable), lwd=1.5) + 
+  geom_point(aes(color = variable), size = 4) +
+  scale_color_manual(values = c("green", "blue")) +
+  theme_bw() +
+  labs(x = "Innings Pitched (Min)",
+       y = "Correlation",
+       caption = "@pmamminofantasy",
+       title = "Correlations To Future ERA By IP Totals",
+       subtitle = "FIP and New_Stuff") +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 16),
+        plot.subtitle = element_text(size = 14),
+        plot.caption = element_text(size = 10))
+corr_next_plot
+
+
 
 all_seasons_pt <- readRDS("all_results_allpitches_allseasons.rds")
+
+results_all_seasons_Stuff$ERA_Next <- predict(era_stuff_model_next,results_all_seasons_Stuff)

@@ -1,0 +1,202 @@
+---
+title: "MLB Results By Pitch Type and Count"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(gridExtra)
+
+```
+
+# Count: 0-0
+
+```{r echo=FALSE, warning = FALSE, fig.width = 10}
+grid.arrange(readRDS("fastball_00_woba.rds"),
+             readRDS("fastball_00_swing.rds"),
+             readRDS("fastball_00_whiff.rds"),
+             readRDS("breaking_00_woba.rds"),
+             readRDS("breaking_00_swing.rds"),
+             readRDS("breaking_00_whiff.rds"),
+             readRDS("offspeed_00_woba.rds"),
+             readRDS("offspeed_00_swing.rds"),
+             readRDS("offspeed_00_whiff.rds"),
+             ncol = 3,
+             nrow = 3)
+```
+
+# Count: 0-1
+
+```{r echo=FALSE, warning = FALSE, fig.width = 10}
+grid.arrange(readRDS("fastball_01_woba.rds"),
+             readRDS("fastball_01_swing.rds"),
+             readRDS("fastball_01_whiff.rds"),
+             readRDS("breaking_01_woba.rds"),
+             readRDS("breaking_01_swing.rds"),
+             readRDS("breaking_01_whiff.rds"),
+             readRDS("offspeed_01_woba.rds"),
+             readRDS("offspeed_01_swing.rds"),
+             readRDS("offspeed_01_whiff.rds"),
+             ncol = 3,
+             nrow = 3)
+```
+
+# Count: 0-2
+
+```{r echo=FALSE, warning = FALSE, fig.width = 10}
+grid.arrange(readRDS("fastball_02_woba.rds"),
+             readRDS("fastball_02_swing.rds"),
+             readRDS("fastball_02_whiff.rds"),
+             readRDS("breaking_02_woba.rds"),
+             readRDS("breaking_02_swing.rds"),
+             readRDS("breaking_02_whiff.rds"),
+             readRDS("offspeed_02_woba.rds"),
+             readRDS("offspeed_02_swing.rds"),
+             readRDS("offspeed_02_whiff.rds"),
+             ncol = 3,
+             nrow = 3)
+```
+
+# Count: 1-0
+
+```{r echo=FALSE, warning = FALSE, fig.width = 10}
+grid.arrange(readRDS("fastball_10_woba.rds"),
+             readRDS("fastball_10_swing.rds"),
+             readRDS("fastball_10_whiff.rds"),
+             readRDS("breaking_10_woba.rds"),
+             readRDS("breaking_10_swing.rds"),
+             readRDS("breaking_10_whiff.rds"),
+             readRDS("offspeed_10_woba.rds"),
+             readRDS("offspeed_10_swing.rds"),
+             readRDS("offspeed_10_whiff.rds"),
+             ncol = 3,
+             nrow = 3)
+```
+
+# Count: 1-1
+
+```{r echo=FALSE, warning = FALSE, fig.width = 10}
+grid.arrange(readRDS("fastball_11_woba.rds"),
+             readRDS("fastball_11_swing.rds"),
+             readRDS("fastball_11_whiff.rds"),
+             readRDS("breaking_11_woba.rds"),
+             readRDS("breaking_11_swing.rds"),
+             readRDS("breaking_11_whiff.rds"),
+             readRDS("offspeed_11_woba.rds"),
+             readRDS("offspeed_11_swing.rds"),
+             readRDS("offspeed_11_whiff.rds"),
+             ncol = 3,
+             nrow = 3)
+```
+
+# Count: 1-2
+
+```{r echo=FALSE, warning = FALSE, fig.width = 10}
+grid.arrange(readRDS("fastball_12_woba.rds"),
+             readRDS("fastball_12_swing.rds"),
+             readRDS("fastball_12_whiff.rds"),
+             readRDS("breaking_12_woba.rds"),
+             readRDS("breaking_12_swing.rds"),
+             readRDS("breaking_12_whiff.rds"),
+             readRDS("offspeed_12_woba.rds"),
+             readRDS("offspeed_12_swing.rds"),
+             readRDS("offspeed_12_whiff.rds"),
+             ncol = 3,
+             nrow = 3)
+```
+
+# Count: 2-0
+
+```{r echo=FALSE, warning = FALSE, fig.width = 10}
+grid.arrange(readRDS("fastball_20_woba.rds"),
+             readRDS("fastball_20_swing.rds"),
+             readRDS("fastball_20_whiff.rds"),
+             readRDS("breaking_20_woba.rds"),
+             readRDS("breaking_20_swing.rds"),
+             readRDS("breaking_20_whiff.rds"),
+             readRDS("offspeed_20_woba.rds"),
+             readRDS("offspeed_20_swing.rds"),
+             readRDS("offspeed_20_whiff.rds"),
+             ncol = 3,
+             nrow = 3)
+```
+
+# Count: 2-1
+
+```{r echo=FALSE, warning = FALSE, fig.width = 10}
+grid.arrange(readRDS("fastball_21_woba.rds"),
+             readRDS("fastball_21_swing.rds"),
+             readRDS("fastball_21_whiff.rds"),
+             readRDS("breaking_21_woba.rds"),
+             readRDS("breaking_21_swing.rds"),
+             readRDS("breaking_21_whiff.rds"),
+             readRDS("offspeed_21_woba.rds"),
+             readRDS("offspeed_21_swing.rds"),
+             readRDS("offspeed_21_whiff.rds"),
+             ncol = 3,
+             nrow = 3)
+```
+
+# Count: 2-2
+
+```{r echo=FALSE, warning = FALSE, fig.width = 10}
+grid.arrange(readRDS("fastball_22_woba.rds"),
+             readRDS("fastball_22_swing.rds"),
+             readRDS("fastball_22_whiff.rds"),
+             readRDS("breaking_22_woba.rds"),
+             readRDS("breaking_22_swing.rds"),
+             readRDS("breaking_22_whiff.rds"),
+             readRDS("offspeed_22_woba.rds"),
+             readRDS("offspeed_22_swing.rds"),
+             readRDS("offspeed_22_whiff.rds"),
+             ncol = 3,
+             nrow = 3)
+```
+
+# Count: 3-0
+
+```{r echo=FALSE, warning = FALSE, fig.width = 10}
+grid.arrange(readRDS("fastball_30_woba.rds"),
+             readRDS("fastball_30_swing.rds"),
+             readRDS("fastball_30_whiff.rds"),
+             readRDS("breaking_30_swing.rds"),
+             readRDS("breaking_30_whiff.rds"),
+             readRDS("offspeed_30_swing.rds"),
+             readRDS("offspeed_30_whiff.rds"),
+             ncol = 3,
+             nrow = 3, layout_matrix = matrix(c(1,NA,NA,2,4,6,3,5,7), nrow = 3))
+```
+
+# Count: 3-1
+
+```{r echo=FALSE, warning = FALSE, fig.width = 10}
+grid.arrange(readRDS("fastball_31_woba.rds"),
+             readRDS("fastball_31_swing.rds"),
+             readRDS("fastball_31_whiff.rds"),
+             readRDS("breaking_31_woba.rds"),
+             readRDS("breaking_31_swing.rds"),
+             readRDS("breaking_31_whiff.rds"),
+             readRDS("offspeed_31_woba.rds"),
+             readRDS("offspeed_31_swing.rds"),
+             readRDS("offspeed_31_whiff.rds"),
+             ncol = 3,
+             nrow = 3)
+```
+
+# Count: 3-2
+
+```{r echo=FALSE, warning = FALSE, fig.width = 10}
+grid.arrange(readRDS("fastball_32_woba.rds"),
+             readRDS("fastball_32_swing.rds"),
+             readRDS("fastball_32_whiff.rds"),
+             readRDS("breaking_32_woba.rds"),
+             readRDS("breaking_32_swing.rds"),
+             readRDS("breaking_32_whiff.rds"),
+             readRDS("offspeed_32_woba.rds"),
+             readRDS("offspeed_32_swing.rds"),
+             readRDS("offspeed_32_whiff.rds"),
+             ncol = 3,
+             nrow = 3)
+```

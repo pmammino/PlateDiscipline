@@ -6673,6 +6673,7 @@ saveRDS((plate_discipline_all_woba), "plate_discipline_all_woba.rds")
 
 ### Pitch Type Correlations----
 all_pitches_stats <- readRDS("all_pitches_stats.rds")
+all_results_allpitches_allseasons <- readRDS("all_results_allpitches_allseasons.rds")
 
 all_pitches_clean <- all_pitches_stats[complete.cases(all_pitches_stats),]
 
@@ -6701,6 +6702,8 @@ all_pitches_stats_summary <- all_pitches_stats_summary %>%
 all_results_pitches_withstats <- left_join(all_results_allpitches_allseasons,all_pitches_stats_summary, by = c("pitcher", "player_name", "pitch_type"))
 all_results_pitches_withstats$BU <- round(all_results_pitches_withstats$Spin_Rate/all_results_pitches_withstats$Velocity,2)
 all_results_pitches_withstats$Move_Angle <- rad2deg(atan2(all_results_pitches_withstats$Move_z,all_results_pitches_withstats$Move_x))
+all_results_pitches_withstats$Move_x <- all_results_pitches_withstats$Move_x * 12
+all_results_pitches_withstats$Move_z <- all_results_pitches_withstats$Move_z * 12
 
 pitch_correlations <- all_results_pitches_withstats %>%
   group_by(pitch_type, p_throws) %>%
@@ -6715,24 +6718,1932 @@ pitch_correlations <- all_results_pitches_withstats %>%
     BU = round(cor(BU,Stuff),3),
     Move_Angle = round(cor(Move_Angle,Stuff),3))
 
-fastball_stats <- all_pitches_stats_summary %>%
-  filter(pitch_type == "FF")
-fastball_stats$BU <- round(fastball_stats$Spin_Rate/fastball_stats$Velocity,2)
-fastball_stats$Move_Angle <- rad2deg(atan2(fastball_stats$Move_z,fastball_stats$Move_x))
+### FF Correlation ----
+FF_R <- all_results_pitches_withstats %>%
+  filter(pitch_type == "FF") %>%
+  filter(p_throws == "R")
 
-fastball_stats <- fastball_stats[,c("pitcher",
-                                "BU",
-                                "Move_Angle")]
+FF_R_Velocity <- ggplot(FF_R, aes(y = Stuff, x = Velocity)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+                      x = "Velocity",
+                      caption = "",
+                      title = "Stuff ERA vs Velocity",
+                      subtitle = "FF_R",
+                      col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
 
-colnames(fastball_stats) <- c("pitcher", "BU_FF", "Move_Angle_FF")
+FF_R_Move_x <- ggplot(FF_R, aes(y = Stuff, x = Move_x)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_x",
+       caption = "",
+       title = "Stuff ERA vs Horizontal Movement",
+       subtitle = "FF_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
 
-breaking <- all_results_pitches_withstats %>%
-  filter(pitch_type %in% c("CU", "KC", "SL"))
+FF_R_Move_z <- ggplot(FF_R, aes(y = Stuff, x = Move_z)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_z",
+       caption = "",
+       title = "Stuff ERA vs Vertical Movement",
+       subtitle = "FF_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
 
-breaking_fastball <- left_join(breaking, fastball_stats, by = "pitcher")
+FF_R_Spin_Rate <- ggplot(FF_R, aes(y = Stuff, x = Spin_Rate)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Spin_Rate",
+       caption = "",
+       title = "Stuff ERA vs Spin_Rate",
+       subtitle = "FF_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
 
-breaking_fastball <- breaking_fastball %>%
-  filter(!is.na(BU_FF))
+FF_R_BU <- ggplot(FF_R, aes(y = Stuff, x = BU)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "BU",
+       caption = "",
+       title = "Stuff ERA vs BU",
+       subtitle = "FF_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+FF_R_Move_Angle <-  ggplot(FF_R, aes(y = Stuff, x = Move_Angle)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_Angle",
+       caption = "",
+       title = "Stuff ERA vs Move_Angle",
+       subtitle = "FF_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+FF_L <- all_results_pitches_withstats %>%
+  filter(pitch_type == "FF") %>%
+  filter(p_throws == "L")
+
+FF_L_Velocity <- ggplot(FF_L, aes(y = Stuff, x = Velocity)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Velocity",
+       caption = "",
+       title = "Stuff ERA vs Velocity",
+       subtitle = "FF_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+FF_L_Move_x <- ggplot(FF_L, aes(y = Stuff, x = Move_x)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_x",
+       caption = "",
+       title = "Stuff ERA vs Horizontal Movement",
+       subtitle = "FF_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+FF_L_Move_z <- ggplot(FF_L, aes(y = Stuff, x = Move_z)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_z",
+       caption = "",
+       title = "Stuff ERA vs Vertical Movement",
+       subtitle = "FF_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+FF_L_Spin_Rate <- ggplot(FF_L, aes(y = Stuff, x = Spin_Rate)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Spin_Rate",
+       caption = "",
+       title = "Stuff ERA vs Spin_Rate",
+       subtitle = "FF_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+FF_L_BU <- ggplot(FF_L, aes(y = Stuff, x = BU)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "BU",
+       caption = "",
+       title = "Stuff ERA vs BU",
+       subtitle = "FF_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+FF_L_Move_Angle <-  ggplot(FF_L, aes(y = Stuff, x = Move_Angle)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_Angle",
+       caption = "",
+       title = "Stuff ERA vs Move_Angle",
+       subtitle = "FF_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+### FT Correlation ----
+FT_R <- all_results_pitches_withstats %>%
+  filter(pitch_type == "FT") %>%
+  filter(p_throws == "R")
+
+FT_R_Velocity <- ggplot(FT_R, aes(y = Stuff, x = Velocity)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Velocity",
+       caption = "",
+       title = "Stuff ERA vs Velocity",
+       subtitle = "FT_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+FT_R_Move_x <- ggplot(FT_R, aes(y = Stuff, x = Move_x)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_x",
+       caption = "",
+       title = "Stuff ERA vs Horizontal Movement",
+       subtitle = "FT_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+FT_R_Move_z <- ggplot(FT_R, aes(y = Stuff, x = Move_z)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_z",
+       caption = "",
+       title = "Stuff ERA vs Vertical Movement",
+       subtitle = "FT_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+FT_R_Spin_Rate <- ggplot(FT_R, aes(y = Stuff, x = Spin_Rate)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Spin_Rate",
+       caption = "",
+       title = "Stuff ERA vs Spin_Rate",
+       subtitle = "FT_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+FT_R_BU <- ggplot(FT_R, aes(y = Stuff, x = BU)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "BU",
+       caption = "",
+       title = "Stuff ERA vs BU",
+       subtitle = "FT_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+FT_R_Move_Angle <-  ggplot(FT_R, aes(y = Stuff, x = Move_Angle)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_Angle",
+       caption = "",
+       title = "Stuff ERA vs Move_Angle",
+       subtitle = "FT_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+FT_L <- all_results_pitches_withstats %>%
+  filter(pitch_type == "FT") %>%
+  filter(p_throws == "L")
+
+FT_L_Velocity <- ggplot(FT_L, aes(y = Stuff, x = Velocity)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Velocity",
+       caption = "",
+       title = "Stuff ERA vs Velocity",
+       subtitle = "FT_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+FT_L_Move_x <- ggplot(FT_L, aes(y = Stuff, x = Move_x)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_x",
+       caption = "",
+       title = "Stuff ERA vs Horizontal Movement",
+       subtitle = "FT_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+FT_L_Move_z <- ggplot(FT_L, aes(y = Stuff, x = Move_z)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_z",
+       caption = "",
+       title = "Stuff ERA vs Vertical Movement",
+       subtitle = "FT_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+FT_L_Spin_Rate <- ggplot(FT_L, aes(y = Stuff, x = Spin_Rate)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Spin_Rate",
+       caption = "",
+       title = "Stuff ERA vs Spin_Rate",
+       subtitle = "FT_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+FT_L_BU <- ggplot(FT_L, aes(y = Stuff, x = BU)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "BU",
+       caption = "",
+       title = "Stuff ERA vs BU",
+       subtitle = "FT_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+FT_L_Move_Angle <-  ggplot(FT_L, aes(y = Stuff, x = Move_Angle)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_Angle",
+       caption = "",
+       title = "Stuff ERA vs Move_Angle",
+       subtitle = "FT_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+### FC Correlation ----
+FC_R <- all_results_pitches_withstats %>%
+  filter(pitch_type == "FC") %>%
+  filter(p_throws == "R")
+
+FC_R_Velocity <- ggplot(FC_R, aes(y = Stuff, x = Velocity)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Velocity",
+       caption = "",
+       title = "Stuff ERA vs Velocity",
+       subtitle = "FC_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+FC_R_Move_x <- ggplot(FC_R, aes(y = Stuff, x = Move_x)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_x",
+       caption = "",
+       title = "Stuff ERA vs Horizontal Movement",
+       subtitle = "FC_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+FC_R_Move_z <- ggplot(FC_R, aes(y = Stuff, x = Move_z)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_z",
+       caption = "",
+       title = "Stuff ERA vs Vertical Movement",
+       subtitle = "FC_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+FC_R_Spin_Rate <- ggplot(FC_R, aes(y = Stuff, x = Spin_Rate)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Spin_Rate",
+       caption = "",
+       title = "Stuff ERA vs Spin_Rate",
+       subtitle = "FC_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+FC_R_BU <- ggplot(FC_R, aes(y = Stuff, x = BU)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "BU",
+       caption = "",
+       title = "Stuff ERA vs BU",
+       subtitle = "FC_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+FC_R_Move_Angle <-  ggplot(FC_R, aes(y = Stuff, x = Move_Angle)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_Angle",
+       caption = "",
+       title = "Stuff ERA vs Move_Angle",
+       subtitle = "FC_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+FC_L <- all_results_pitches_withstats %>%
+  filter(pitch_type == "FC") %>%
+  filter(p_throws == "L")
+
+FC_L_Velocity <- ggplot(FC_L, aes(y = Stuff, x = Velocity)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Velocity",
+       caption = "",
+       title = "Stuff ERA vs Velocity",
+       subtitle = "FC_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+FC_L_Move_x <- ggplot(FC_L, aes(y = Stuff, x = Move_x)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_x",
+       caption = "",
+       title = "Stuff ERA vs Horizontal Movement",
+       subtitle = "FC_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+FC_L_Move_z <- ggplot(FC_L, aes(y = Stuff, x = Move_z)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_z",
+       caption = "",
+       title = "Stuff ERA vs Vertical Movement",
+       subtitle = "FC_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+FC_L_Spin_Rate <- ggplot(FC_L, aes(y = Stuff, x = Spin_Rate)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Spin_Rate",
+       caption = "",
+       title = "Stuff ERA vs Spin_Rate",
+       subtitle = "FC_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+FC_L_BU <- ggplot(FC_L, aes(y = Stuff, x = BU)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "BU",
+       caption = "",
+       title = "Stuff ERA vs BU",
+       subtitle = "FC_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+FC_L_Move_Angle <-  ggplot(FC_L, aes(y = Stuff, x = Move_Angle)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_Angle",
+       caption = "",
+       title = "Stuff ERA vs Move_Angle",
+       subtitle = "FC_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+### SI Correlation ----
+SI_R <- all_results_pitches_withstats %>%
+  filter(pitch_type == "SI") %>%
+  filter(p_throws == "R")
+
+SI_R_Velocity <- ggplot(SI_R, aes(y = Stuff, x = Velocity)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Velocity",
+       caption = "",
+       title = "Stuff ERA vs Velocity",
+       subtitle = "SI_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+SI_R_Move_x <- ggplot(SI_R, aes(y = Stuff, x = Move_x)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_x",
+       caption = "",
+       title = "Stuff ERA vs Horizontal Movement",
+       subtitle = "SI_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+SI_R_Move_z <- ggplot(SI_R, aes(y = Stuff, x = Move_z)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_z",
+       caption = "",
+       title = "Stuff ERA vs Vertical Movement",
+       subtitle = "SI_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+SI_R_Spin_Rate <- ggplot(SI_R, aes(y = Stuff, x = Spin_Rate)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Spin_Rate",
+       caption = "",
+       title = "Stuff ERA vs Spin_Rate",
+       subtitle = "SI_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+SI_R_BU <- ggplot(SI_R, aes(y = Stuff, x = BU)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "BU",
+       caption = "",
+       title = "Stuff ERA vs BU",
+       subtitle = "SI_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+SI_R_Move_Angle <-  ggplot(SI_R, aes(y = Stuff, x = Move_Angle)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_Angle",
+       caption = "",
+       title = "Stuff ERA vs Move_Angle",
+       subtitle = "SI_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+SI_L <- all_results_pitches_withstats %>%
+  filter(pitch_type == "SI") %>%
+  filter(p_throws == "L")
+
+SI_L_Velocity <- ggplot(SI_L, aes(y = Stuff, x = Velocity)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Velocity",
+       caption = "",
+       title = "Stuff ERA vs Velocity",
+       subtitle = "SI_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+SI_L_Move_x <- ggplot(SI_L, aes(y = Stuff, x = Move_x)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_x",
+       caption = "",
+       title = "Stuff ERA vs Horizontal Movement",
+       subtitle = "SI_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+SI_L_Move_z <- ggplot(SI_L, aes(y = Stuff, x = Move_z)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_z",
+       caption = "",
+       title = "Stuff ERA vs Vertical Movement",
+       subtitle = "SI_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+SI_L_Spin_Rate <- ggplot(SI_L, aes(y = Stuff, x = Spin_Rate)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Spin_Rate",
+       caption = "",
+       title = "Stuff ERA vs Spin_Rate",
+       subtitle = "SI_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+SI_L_BU <- ggplot(SI_L, aes(y = Stuff, x = BU)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "BU",
+       caption = "",
+       title = "Stuff ERA vs BU",
+       subtitle = "SI_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+SI_L_Move_Angle <-  ggplot(SI_L, aes(y = Stuff, x = Move_Angle)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_Angle",
+       caption = "",
+       title = "Stuff ERA vs Move_Angle",
+       subtitle = "SI_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+### SL Correlation ----
+SL_R <- all_results_pitches_withstats %>%
+  filter(pitch_type == "SL") %>%
+  filter(p_throws == "R")
+
+SL_R_Velocity <- ggplot(SL_R, aes(y = Stuff, x = Velocity)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Velocity",
+       caption = "",
+       title = "Stuff ERA vs Velocity",
+       subtitle = "SL_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+SL_R_Move_x <- ggplot(SL_R, aes(y = Stuff, x = Move_x)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_x",
+       caption = "",
+       title = "Stuff ERA vs Horizontal Movement",
+       subtitle = "SL_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+SL_R_Move_z <- ggplot(SL_R, aes(y = Stuff, x = Move_z)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_z",
+       caption = "",
+       title = "Stuff ERA vs Vertical Movement",
+       subtitle = "SL_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+SL_R_Spin_Rate <- ggplot(SL_R, aes(y = Stuff, x = Spin_Rate)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Spin_Rate",
+       caption = "",
+       title = "Stuff ERA vs Spin_Rate",
+       subtitle = "SL_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+SL_R_BU <- ggplot(SL_R, aes(y = Stuff, x = BU)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "BU",
+       caption = "",
+       title = "Stuff ERA vs BU",
+       subtitle = "SL_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+SL_R_Move_Angle <-  ggplot(SL_R, aes(y = Stuff, x = Move_Angle)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_Angle",
+       caption = "",
+       title = "Stuff ERA vs Move_Angle",
+       subtitle = "SL_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+SL_L <- all_results_pitches_withstats %>%
+  filter(pitch_type == "SL") %>%
+  filter(p_throws == "L")
+
+SL_L_Velocity <- ggplot(SL_L, aes(y = Stuff, x = Velocity)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Velocity",
+       caption = "",
+       title = "Stuff ERA vs Velocity",
+       subtitle = "SL_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+SL_L_Move_x <- ggplot(SL_L, aes(y = Stuff, x = Move_x)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_x",
+       caption = "",
+       title = "Stuff ERA vs Horizontal Movement",
+       subtitle = "SL_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+SL_L_Move_z <- ggplot(SL_L, aes(y = Stuff, x = Move_z)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_z",
+       caption = "",
+       title = "Stuff ERA vs Vertical Movement",
+       subtitle = "SL_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+SL_L_Spin_Rate <- ggplot(SL_L, aes(y = Stuff, x = Spin_Rate)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Spin_Rate",
+       caption = "",
+       title = "Stuff ERA vs Spin_Rate",
+       subtitle = "SL_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+SL_L_BU <- ggplot(SL_L, aes(y = Stuff, x = BU)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "BU",
+       caption = "",
+       title = "Stuff ERA vs BU",
+       subtitle = "SL_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+SL_L_Move_Angle <-  ggplot(SL_L, aes(y = Stuff, x = Move_Angle)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_Angle",
+       caption = "",
+       title = "Stuff ERA vs Move_Angle",
+       subtitle = "SL_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+### CU Correlation ----
+CU_R <- all_results_pitches_withstats %>%
+  filter(pitch_type == "CU") %>%
+  filter(p_throws == "R")
+
+CU_R_Velocity <- ggplot(CU_R, aes(y = Stuff, x = Velocity)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Velocity",
+       caption = "",
+       title = "Stuff ERA vs Velocity",
+       subtitle = "CU_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+CU_R_Move_x <- ggplot(CU_R, aes(y = Stuff, x = Move_x)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_x",
+       caption = "",
+       title = "Stuff ERA vs Horizontal Movement",
+       subtitle = "CU_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+CU_R_Move_z <- ggplot(CU_R, aes(y = Stuff, x = Move_z)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_z",
+       caption = "",
+       title = "Stuff ERA vs Vertical Movement",
+       subtitle = "CU_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+CU_R_Spin_Rate <- ggplot(CU_R, aes(y = Stuff, x = Spin_Rate)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Spin_Rate",
+       caption = "",
+       title = "Stuff ERA vs Spin_Rate",
+       subtitle = "CU_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+CU_R_BU <- ggplot(CU_R, aes(y = Stuff, x = BU)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "BU",
+       caption = "",
+       title = "Stuff ERA vs BU",
+       subtitle = "CU_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+CU_R_Move_Angle <-  ggplot(CU_R, aes(y = Stuff, x = Move_Angle)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_Angle",
+       caption = "",
+       title = "Stuff ERA vs Move_Angle",
+       subtitle = "CU_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+CU_L <- all_results_pitches_withstats %>%
+  filter(pitch_type == "CU") %>%
+  filter(p_throws == "L")
+
+CU_L_Velocity <- ggplot(CU_L, aes(y = Stuff, x = Velocity)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Velocity",
+       caption = "",
+       title = "Stuff ERA vs Velocity",
+       subtitle = "CU_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+CU_L_Move_x <- ggplot(CU_L, aes(y = Stuff, x = Move_x)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_x",
+       caption = "",
+       title = "Stuff ERA vs Horizontal Movement",
+       subtitle = "CU_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+CU_L_Move_z <- ggplot(CU_L, aes(y = Stuff, x = Move_z)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_z",
+       caption = "",
+       title = "Stuff ERA vs Vertical Movement",
+       subtitle = "CU_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+CU_L_Spin_Rate <- ggplot(CU_L, aes(y = Stuff, x = Spin_Rate)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Spin_Rate",
+       caption = "",
+       title = "Stuff ERA vs Spin_Rate",
+       subtitle = "CU_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+CU_L_BU <- ggplot(CU_L, aes(y = Stuff, x = BU)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "BU",
+       caption = "",
+       title = "Stuff ERA vs BU",
+       subtitle = "CU_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+CU_L_Move_Angle <-  ggplot(CU_L, aes(y = Stuff, x = Move_Angle)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_Angle",
+       caption = "",
+       title = "Stuff ERA vs Move_Angle",
+       subtitle = "CU_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+### KC Correlation ----
+KC_R <- all_results_pitches_withstats %>%
+  filter(pitch_type == "KC") %>%
+  filter(p_throws == "R")
+
+KC_R_Velocity <- ggplot(KC_R, aes(y = Stuff, x = Velocity)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Velocity",
+       caption = "",
+       title = "Stuff ERA vs Velocity",
+       subtitle = "KC_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+KC_R_Move_x <- ggplot(KC_R, aes(y = Stuff, x = Move_x)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_x",
+       caption = "",
+       title = "Stuff ERA vs Horizontal Movement",
+       subtitle = "KC_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+KC_R_Move_z <- ggplot(KC_R, aes(y = Stuff, x = Move_z)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_z",
+       caption = "",
+       title = "Stuff ERA vs Vertical Movement",
+       subtitle = "KC_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+KC_R_Spin_Rate <- ggplot(KC_R, aes(y = Stuff, x = Spin_Rate)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Spin_Rate",
+       caption = "",
+       title = "Stuff ERA vs Spin_Rate",
+       subtitle = "KC_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+KC_R_BU <- ggplot(KC_R, aes(y = Stuff, x = BU)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "BU",
+       caption = "",
+       title = "Stuff ERA vs BU",
+       subtitle = "KC_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+KC_R_Move_Angle <-  ggplot(KC_R, aes(y = Stuff, x = Move_Angle)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_Angle",
+       caption = "",
+       title = "Stuff ERA vs Move_Angle",
+       subtitle = "KC_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+KC_L <- all_results_pitches_withstats %>%
+  filter(pitch_type == "KC") %>%
+  filter(p_throws == "L")
+
+KC_L_Velocity <- ggplot(KC_L, aes(y = Stuff, x = Velocity)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Velocity",
+       caption = "",
+       title = "Stuff ERA vs Velocity",
+       subtitle = "KC_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+KC_L_Move_x <- ggplot(KC_L, aes(y = Stuff, x = Move_x)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_x",
+       caption = "",
+       title = "Stuff ERA vs Horizontal Movement",
+       subtitle = "KC_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+KC_L_Move_z <- ggplot(KC_L, aes(y = Stuff, x = Move_z)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_z",
+       caption = "",
+       title = "Stuff ERA vs Vertical Movement",
+       subtitle = "KC_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+KC_L_Spin_Rate <- ggplot(KC_L, aes(y = Stuff, x = Spin_Rate)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Spin_Rate",
+       caption = "",
+       title = "Stuff ERA vs Spin_Rate",
+       subtitle = "KC_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+KC_L_BU <- ggplot(KC_L, aes(y = Stuff, x = BU)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "BU",
+       caption = "",
+       title = "Stuff ERA vs BU",
+       subtitle = "KC_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+KC_L_Move_Angle <-  ggplot(KC_L, aes(y = Stuff, x = Move_Angle)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_Angle",
+       caption = "",
+       title = "Stuff ERA vs Move_Angle",
+       subtitle = "KC_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+### CH Correlation ----
+CH_R <- all_results_pitches_withstats %>%
+  filter(pitch_type == "CH") %>%
+  filter(p_throws == "R")
+
+CH_R_Velocity <- ggplot(CH_R, aes(y = Stuff, x = Velocity)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Velocity",
+       caption = "",
+       title = "Stuff ERA vs Velocity",
+       subtitle = "CH_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+CH_R_Move_x <- ggplot(CH_R, aes(y = Stuff, x = Move_x)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_x",
+       caption = "",
+       title = "Stuff ERA vs Horizontal Movement",
+       subtitle = "CH_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+CH_R_Move_z <- ggplot(CH_R, aes(y = Stuff, x = Move_z)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_z",
+       caption = "",
+       title = "Stuff ERA vs Vertical Movement",
+       subtitle = "CH_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+CH_R_Spin_Rate <- ggplot(CH_R, aes(y = Stuff, x = Spin_Rate)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Spin_Rate",
+       caption = "",
+       title = "Stuff ERA vs Spin_Rate",
+       subtitle = "CH_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+CH_R_BU <- ggplot(CH_R, aes(y = Stuff, x = BU)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "BU",
+       caption = "",
+       title = "Stuff ERA vs BU",
+       subtitle = "CH_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+CH_R_Move_Angle <-  ggplot(CH_R, aes(y = Stuff, x = Move_Angle)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_Angle",
+       caption = "",
+       title = "Stuff ERA vs Move_Angle",
+       subtitle = "CH_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+CH_L <- all_results_pitches_withstats %>%
+  filter(pitch_type == "CH") %>%
+  filter(p_throws == "L")
+
+CH_L_Velocity <- ggplot(CH_L, aes(y = Stuff, x = Velocity)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Velocity",
+       caption = "",
+       title = "Stuff ERA vs Velocity",
+       subtitle = "CH_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+CH_L_Move_x <- ggplot(CH_L, aes(y = Stuff, x = Move_x)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_x",
+       caption = "",
+       title = "Stuff ERA vs Horizontal Movement",
+       subtitle = "CH_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+CH_L_Move_z <- ggplot(CH_L, aes(y = Stuff, x = Move_z)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_z",
+       caption = "",
+       title = "Stuff ERA vs Vertical Movement",
+       subtitle = "CH_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+CH_L_Spin_Rate <- ggplot(CH_L, aes(y = Stuff, x = Spin_Rate)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Spin_Rate",
+       caption = "",
+       title = "Stuff ERA vs Spin_Rate",
+       subtitle = "CH_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+CH_L_BU <- ggplot(CH_L, aes(y = Stuff, x = BU)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "BU",
+       caption = "",
+       title = "Stuff ERA vs BU",
+       subtitle = "CH_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+CH_L_Move_Angle <-  ggplot(CH_L, aes(y = Stuff, x = Move_Angle)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_Angle",
+       caption = "",
+       title = "Stuff ERA vs Move_Angle",
+       subtitle = "CH_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+### FS Correlation ----
+FS_R <- all_results_pitches_withstats %>%
+  filter(pitch_type == "FS") %>%
+  filter(p_throws == "R")
+
+FS_R_Velocity <- ggplot(FS_R, aes(y = Stuff, x = Velocity)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Velocity",
+       caption = "",
+       title = "Stuff ERA vs Velocity",
+       subtitle = "FS_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+FS_R_Move_x <- ggplot(FS_R, aes(y = Stuff, x = Move_x)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_x",
+       caption = "",
+       title = "Stuff ERA vs Horizontal Movement",
+       subtitle = "FS_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+FS_R_Move_z <- ggplot(FS_R, aes(y = Stuff, x = Move_z)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_z",
+       caption = "",
+       title = "Stuff ERA vs Vertical Movement",
+       subtitle = "FS_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+FS_R_Spin_Rate <- ggplot(FS_R, aes(y = Stuff, x = Spin_Rate)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Spin_Rate",
+       caption = "",
+       title = "Stuff ERA vs Spin_Rate",
+       subtitle = "FS_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+FS_R_BU <- ggplot(FS_R, aes(y = Stuff, x = BU)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "BU",
+       caption = "",
+       title = "Stuff ERA vs BU",
+       subtitle = "FS_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+FS_R_Move_Angle <-  ggplot(FS_R, aes(y = Stuff, x = Move_Angle)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_Angle",
+       caption = "",
+       title = "Stuff ERA vs Move_Angle",
+       subtitle = "FS_R",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+FS_L <- all_results_pitches_withstats %>%
+  filter(pitch_type == "FS") %>%
+  filter(p_throws == "L")
+
+FS_L_Velocity <- ggplot(FS_L, aes(y = Stuff, x = Velocity)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Velocity",
+       caption = "",
+       title = "Stuff ERA vs Velocity",
+       subtitle = "FS_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+FS_L_Move_x <- ggplot(FS_L, aes(y = Stuff, x = Move_x)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_x",
+       caption = "",
+       title = "Stuff ERA vs Horizontal Movement",
+       subtitle = "FS_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+FS_L_Move_z <- ggplot(FS_L, aes(y = Stuff, x = Move_z)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_z",
+       caption = "",
+       title = "Stuff ERA vs Vertical Movement",
+       subtitle = "FS_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+FS_L_Spin_Rate <- ggplot(FS_L, aes(y = Stuff, x = Spin_Rate)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Spin_Rate",
+       caption = "",
+       title = "Stuff ERA vs Spin_Rate",
+       subtitle = "FS_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+FS_L_BU <- ggplot(FS_L, aes(y = Stuff, x = BU)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "BU",
+       caption = "",
+       title = "Stuff ERA vs BU",
+       subtitle = "FS_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+FS_L_Move_Angle <-  ggplot(FS_L, aes(y = Stuff, x = Move_Angle)) + 
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "loess") +
+  labs(y = "Stuff ERA",
+       x = "Move_Angle",
+       caption = "",
+       title = "Stuff ERA vs Move_Angle",
+       subtitle = "FS_L",
+       col = NULL) +
+  theme(axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 10))
+
+### Save RDS Corr Charts ----
+saveRDS(FF_R_Velocity,"FF_R_Velocity.rds")
+saveRDS(FF_R_Move_x,"FF_R_Move_x.rds")
+saveRDS(FF_R_Move_z,"FF_R_Move_z.rds")
+saveRDS(FF_R_BU,"FF_R_BU.rds")
+saveRDS(FF_R_Move_Angle,"FF_R_Move_Angle.rds")
+saveRDS(FF_R_Spin_Rate,"FF_R_Spin_Rate.rds")
+saveRDS(FF_L_Velocity,"FF_L_Velocity.rds")
+saveRDS(FF_L_Move_x,"FF_L_Move_x.rds")
+saveRDS(FF_L_Move_z,"FF_L_Move_z.rds")
+saveRDS(FF_L_BU,"FF_L_BU.rds")
+saveRDS(FF_L_Move_Angle,"FF_L_Move_Angle.rds")
+saveRDS(FF_L_Spin_Rate,"FF_L_Spin_Rate.rds")
+
+saveRDS(FT_R_Velocity,"FT_R_Velocity.rds")
+saveRDS(FT_R_Move_x,"FT_R_Move_x.rds")
+saveRDS(FT_R_Move_z,"FT_R_Move_z.rds")
+saveRDS(FT_R_BU,"FT_R_BU.rds")
+saveRDS(FT_R_Move_Angle,"FT_R_Move_Angle.rds")
+saveRDS(FT_R_Spin_Rate,"FT_R_Spin_Rate.rds")
+saveRDS(FT_L_Velocity,"FT_L_Velocity.rds")
+saveRDS(FT_L_Move_x,"FT_L_Move_x.rds")
+saveRDS(FT_L_Move_z,"FT_L_Move_z.rds")
+saveRDS(FT_L_BU,"FT_L_BU.rds")
+saveRDS(FT_L_Move_Angle,"FT_L_Move_Angle.rds")
+saveRDS(FT_L_Spin_Rate,"FT_L_Spin_Rate.rds")
+
+saveRDS(FC_R_Velocity,"FC_R_Velocity.rds")
+saveRDS(FC_R_Move_x,"FC_R_Move_x.rds")
+saveRDS(FC_R_Move_z,"FC_R_Move_z.rds")
+saveRDS(FC_R_BU,"FC_R_BU.rds")
+saveRDS(FC_R_Move_Angle,"FC_R_Move_Angle.rds")
+saveRDS(FC_R_Spin_Rate,"FC_R_Spin_Rate.rds")
+saveRDS(FC_L_Velocity,"FC_L_Velocity.rds")
+saveRDS(FC_L_Move_x,"FC_L_Move_x.rds")
+saveRDS(FC_L_Move_z,"FC_L_Move_z.rds")
+saveRDS(FC_L_BU,"FC_L_BU.rds")
+saveRDS(FC_L_Move_Angle,"FC_L_Move_Angle.rds")
+saveRDS(FC_L_Spin_Rate,"FC_L_Spin_Rate.rds")
+
+saveRDS(SI_R_Velocity,"SI_R_Velocity.rds")
+saveRDS(SI_R_Move_x,"SI_R_Move_x.rds")
+saveRDS(SI_R_Move_z,"SI_R_Move_z.rds")
+saveRDS(SI_R_BU,"SI_R_BU.rds")
+saveRDS(SI_R_Move_Angle,"SI_R_Move_Angle.rds")
+saveRDS(SI_R_Spin_Rate,"SI_R_Spin_Rate.rds")
+saveRDS(SI_L_Velocity,"SI_L_Velocity.rds")
+saveRDS(SI_L_Move_x,"SI_L_Move_x.rds")
+saveRDS(SI_L_Move_z,"SI_L_Move_z.rds")
+saveRDS(SI_L_BU,"SI_L_BU.rds")
+saveRDS(SI_L_Move_Angle,"SI_L_Move_Angle.rds")
+saveRDS(SI_L_Spin_Rate,"SI_L_Spin_Rate.rds")
+
+saveRDS(SL_R_Velocity,"SL_R_Velocity.rds")
+saveRDS(SL_R_Move_x,"SL_R_Move_x.rds")
+saveRDS(SL_R_Move_z,"SL_R_Move_z.rds")
+saveRDS(SL_R_BU,"SL_R_BU.rds")
+saveRDS(SL_R_Move_Angle,"SL_R_Move_Angle.rds")
+saveRDS(SL_R_Spin_Rate,"SL_R_Spin_Rate.rds")
+saveRDS(SL_L_Velocity,"SL_L_Velocity.rds")
+saveRDS(SL_L_Move_x,"SL_L_Move_x.rds")
+saveRDS(SL_L_Move_z,"SL_L_Move_z.rds")
+saveRDS(SL_L_BU,"SL_L_BU.rds")
+saveRDS(SL_L_Move_Angle,"SL_L_Move_Angle.rds")
+saveRDS(SL_L_Spin_Rate,"SL_L_Spin_Rate.rds")
+
+saveRDS(CU_R_Velocity,"CU_R_Velocity.rds")
+saveRDS(CU_R_Move_x,"CU_R_Move_x.rds")
+saveRDS(CU_R_Move_z,"CU_R_Move_z.rds")
+saveRDS(CU_R_BU,"CU_R_BU.rds")
+saveRDS(CU_R_Move_Angle,"CU_R_Move_Angle.rds")
+saveRDS(CU_R_Spin_Rate,"CU_R_Spin_Rate.rds")
+saveRDS(CU_L_Velocity,"CU_L_Velocity.rds")
+saveRDS(CU_L_Move_x,"CU_L_Move_x.rds")
+saveRDS(CU_L_Move_z,"CU_L_Move_z.rds")
+saveRDS(CU_L_BU,"CU_L_BU.rds")
+saveRDS(CU_L_Move_Angle,"CU_L_Move_Angle.rds")
+saveRDS(CU_L_Spin_Rate,"CU_L_Spin_Rate.rds")
+
+saveRDS(KC_R_Velocity,"KC_R_Velocity.rds")
+saveRDS(KC_R_Move_x,"KC_R_Move_x.rds")
+saveRDS(KC_R_Move_z,"KC_R_Move_z.rds")
+saveRDS(KC_R_BU,"KC_R_BU.rds")
+saveRDS(KC_R_Move_Angle,"KC_R_Move_Angle.rds")
+saveRDS(KC_R_Spin_Rate,"KC_R_Spin_Rate.rds")
+saveRDS(KC_L_Velocity,"KC_L_Velocity.rds")
+saveRDS(KC_L_Move_x,"KC_L_Move_x.rds")
+saveRDS(KC_L_Move_z,"KC_L_Move_z.rds")
+saveRDS(KC_L_BU,"KC_L_BU.rds")
+saveRDS(KC_L_Move_Angle,"KC_L_Move_Angle.rds")
+saveRDS(KC_L_Spin_Rate,"KC_L_Spin_Rate.rds")
+
+saveRDS(CH_R_Velocity,"CH_R_Velocity.rds")
+saveRDS(CH_R_Move_x,"CH_R_Move_x.rds")
+saveRDS(CH_R_Move_z,"CH_R_Move_z.rds")
+saveRDS(CH_R_BU,"CH_R_BU.rds")
+saveRDS(CH_R_Move_Angle,"CH_R_Move_Angle.rds")
+saveRDS(CH_R_Spin_Rate,"CH_R_Spin_Rate.rds")
+saveRDS(CH_L_Velocity,"CH_L_Velocity.rds")
+saveRDS(CH_L_Move_x,"CH_L_Move_x.rds")
+saveRDS(CH_L_Move_z,"CH_L_Move_z.rds")
+saveRDS(CH_L_BU,"CH_L_BU.rds")
+saveRDS(CH_L_Move_Angle,"CH_L_Move_Angle.rds")
+saveRDS(CH_L_Spin_Rate,"CH_L_Spin_Rate.rds")
+
+saveRDS(FS_R_Velocity,"FS_R_Velocity.rds")
+saveRDS(FS_R_Move_x,"FS_R_Move_x.rds")
+saveRDS(FS_R_Move_z,"FS_R_Move_z.rds")
+saveRDS(FS_R_BU,"FS_R_BU.rds")
+saveRDS(FS_R_Move_Angle,"FS_R_Move_Angle.rds")
+saveRDS(FS_R_Spin_Rate,"FS_R_Spin_Rate.rds")
+saveRDS(FS_L_Velocity,"FS_L_Velocity.rds")
+saveRDS(FS_L_Move_x,"FS_L_Move_x.rds")
+saveRDS(FS_L_Move_z,"FS_L_Move_z.rds")
+saveRDS(FS_L_BU,"FS_L_BU.rds")
+saveRDS(FS_L_Move_Angle,"FS_L_Move_Angle.rds")
+saveRDS(FS_L_Spin_Rate,"FS_L_Spin_Rate.rds")
 
 #Correlation Results By Inning Break ----
 results_2019 <- fg_pitch_leaders(2019,2019,qual = 20)
@@ -6914,10 +8825,5 @@ test <- results_all_seasons_Stuff %>%
 test <- test %>%
   filter(!is.na(Command_Prev))
 
-cor(test$IZ,test$IZ_Prev)
-cor(test$OOZ,test$OOZ_Prev)
-cor(test$In_Whiff,test$Whiff_Prev)
-cor(test$In_wOBA,test$wOBA_Prev)
-cor(test$Command,test$Command_Prev)
 
 

@@ -9,25 +9,13 @@ library(REdaS)
 library(gridExtra)
 library(lme4)
 library(Hmisc)
+library(SDMTools)
 setwd("~/GitHub/plate_discipline")
 
 master <- read.csv("master.csv")
 master <- master[,c("fg_id","mlb_id")]
 master$fg_id <- as.numeric(as.character(master$fg_id))
 master$mlb_id <- as.numeric(as.character(master$mlb_id))
-
-
-all_seasons <- readRDS("plate_discipline_all_woba.rds")
-all_seasons <- all_seasons[,c("pitcher",
-                              "player_name",
-                              "Season",
-                              "Pitches",
-                              "IZ",
-                              "OOZ",
-                              "In_Whiff",
-                              "In_wOBA",
-                              "Command",
-                              "StuffERA")]
 
 results_2019 <- fg_pitch_leaders(2019,2019,qual = 20)
 results_2019 <- results_2019[,c("playerid",
@@ -71,6 +59,39 @@ results_2015 <- results_2015[,c("playerid",
                                 "FIP",
                                 "xFIP")]
 
+all_seasons <- readRDS("plate_discipline_all_woba.rds")
+all_seasons <- all_seasons[,c("pitcher",
+                              "player_name",
+                              "Season",
+                              "Pitches",
+                              "IZ",
+                              "OOZ",
+                              "In_Whiff",
+                              "In_wOBA",
+                              "Command",
+                              "StuffERA")]
+
+woba <- all_seasons %>% 
+  select(pitcher,player_name,Season,Pitches,In_wOBA)
+
+woba <- woba %>%
+  pivot_wider(id_cols = c(pitcher,player_name), 
+              names_from = Season, 
+              values_from = c("Pitches", "In_wOBA"))
+
+woba[is.na(woba)] <- 0
+
+woba$Average <- round(((woba$Pitches_2015 * woba$In_wOBA_2015) +
+                        (woba$Pitches_2016 * woba$In_wOBA_2016) +
+                        (woba$Pitches_2017 * woba$In_wOBA_2017) +
+                        (woba$Pitches_2018 * woba$In_wOBA_2018) +
+                        (woba$Pitches_2019 * woba$In_wOBA_2019))/(woba$Pitches_2015 +
+                                                                    woba$Pitches_2016 +
+                                                                    woba$Pitches_2017 +
+                                                                    woba$Pitches_2018 +
+                                                                    woba$Pitches_2019 + 5000),5)
+
+
 results_all_seasons <- rbind(results_2015,results_2016,results_2017,results_2018,results_2019)
 results_all_seasons$playerid <- as.numeric(results_all_seasons$playerid)
 results_all_seasons <- left_join(results_all_seasons,master, by = c("playerid" = "fg_id"))
@@ -95,18 +116,9 @@ results_all_seasons <- results_all_seasons %>%
 results_all_seasons$Seasons <- as.numeric(results_all_seasons$Seasons)
 
 results_all_seasons_Stuff <- left_join(results_all_seasons,all_seasons, by = c("mlb_id" = "pitcher", "Seasons" = "Season"))
-results_all_seasons_Stuff$StuffDiff <- results_all_seasons_Stuff$ERA - results_all_seasons_Stuff$StuffERA
-
-results_all_seasons_Stuff$FipStuff <- results_all_seasons_Stuff$FIP - results_all_seasons_Stuff$StuffERA
-
-results_all_seasons_Stuff <- results_all_seasons_Stuff %>% 
-  group_by(Seasons) %>%
-  mutate(FIP_Percentile = (1- round(percent_rank(FIP),3)) *100,
-         StuffERAPercentile = (1- round(percent_rank(StuffERA),3)) * 100,
-         Precentile_Diff = StuffERAPercentile - FIP_Percentile)
 
 results_next <- results_all_seasons_Stuff %>% 
-  filter(IP >= innings) %>%
+  filter(IP >= 120) %>%
   arrange(playerid, Seasons) %>%
   group_by(playerid) %>% 
   mutate(ERA_Next = dplyr::lead(ERA, n=1, default=NA))
@@ -114,7 +126,9 @@ results_next <- results_all_seasons_Stuff %>%
 results_next <- results_next %>%
   filter(!is.na(ERA_Next))
 
-era_stuff_model_next <- lm(ERA_Next ~ In_Whiff + IZ + OOZ + In_wOBA + Command,
+results_next <- left_join(results_next,woba[,c("pitcher","Average")], by = c("mlb_id" = "pitcher"))
+
+era_stuff_model_next <- lm(ERA_Next ~ In_Whiff + IZ + Average + Command,
                                  data = results_next)
 results_next$StuffERANext <- predict(era_stuff_model_next,results_next)
 
@@ -129,6 +143,8 @@ all_correlations_next <- function(innings){
   
   results_next <- results_next %>%
     filter(!is.na(ERA_Next))
+  
+  results_next <- left_join(results_next,woba[,c("pitcher","Average")], by = c("mlb_id" = "pitcher"))
   
   results_next$StuffERANext <- predict(era_stuff_model_next, newdata = results_next)
   
@@ -166,4 +182,8 @@ corr_next_plot
 
 all_seasons_pt <- readRDS("all_results_allpitches_allseasons.rds")
 
-results_all_seasons_Stuff$ERA_Next <- predict(era_stuff_model_next,results_all_seasons_Stuff)
+results_all_seasons_Stuff <- left_join(results_all_seasons_Stuff,woba[,c("pitcher","Average")], by = c("mlb_id" = "pitcher"))
+
+results_all_seasons_Stuff$ERA_Next <- round(predict(era_stuff_model_next,results_all_seasons_Stuff),3)
+
+results_all_seasons_Stuff$Improve <- results_all_seasons_Stuff$ERA_Next - results_all_seasons_Stuff$ERA
